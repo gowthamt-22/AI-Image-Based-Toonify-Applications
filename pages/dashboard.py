@@ -37,8 +37,40 @@ st.markdown("""
         background: transparent;
     }
     
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes glow {
+        0%, 100% { 
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.5),
+                         0 0 40px rgba(102, 126, 234, 0.3);
+        }
+        50% { 
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.8),
+                         0 0 60px rgba(102, 126, 234, 0.5);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes borderGlow {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+        50% {
+            box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
+        }
+    }
+    
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: radial-gradient(ellipse at top, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        position: relative;
     }
     
     .main .block-container {
@@ -46,9 +78,10 @@ st.markdown("""
     }
     
     .navbar {
-        background: white;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.3);
         padding: 1.5rem 3rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
         margin: -3rem -4rem 2rem -4rem;
         display: flex;
         justify-content: space-between;
@@ -61,6 +94,7 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
     }
     
     .navbar-user {
@@ -71,7 +105,7 @@ st.markdown("""
     
     .user-name {
         font-weight: 600;
-        color: #374151;
+        color: #a8b2d1;
     }
     
     .logout-btn {
@@ -82,6 +116,13 @@ st.markdown("""
         border: none;
         font-weight: 600;
         cursor: pointer;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        transition: all 0.3s ease;
+    }
+    
+    .logout-btn:hover {
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
+        transform: translateY(-2px);
     }
     
     .dashboard-header {
@@ -93,11 +134,12 @@ st.markdown("""
         font-size: 3rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
+        text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
     }
     
     .dashboard-subheader {
         text-align: center;
-        color: #666;
+        color: #a8b2d1;
         font-size: 1.2rem;
         margin-bottom: 2rem;
         font-weight: 300;
@@ -110,7 +152,8 @@ st.markdown("""
         margin: 2rem 0;
         text-align: center;
         color: white;
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
     
     .welcome-title {
@@ -126,52 +169,65 @@ st.markdown("""
     }
     
     .info-card {
-        background: white;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.3);
         padding: 2rem;
         border-radius: 20px;
         margin: 1rem 0;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
         transition: all 0.3s ease;
     }
     
     .info-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
+        border-color: rgba(102, 126, 234, 0.6);
     }
     
     .info-card-title {
         font-size: 1.3rem;
         font-weight: 600;
-        color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin-bottom: 1rem;
-        border-bottom: 2px solid #667eea;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.5);
         padding-bottom: 0.5rem;
     }
     
     .info-item {
         margin: 0.8rem 0;
         font-size: 1rem;
-        color: #333;
+        color: #a8b2d1;
     }
     
     .info-label {
         font-weight: 600;
-        color: #555;
+        color: #8892b0;
     }
     
     .feature-box {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.3);
         padding: 2rem;
         border-radius: 20px;
         margin: 1rem;
         text-align: center;
-        color: white;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        color: #a8b2d1;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-box:hover {
+        transform: translateY(-10px);
+        border-color: rgba(102, 126, 234, 0.8);
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
     }
     
     .feature-icon {
         font-size: 3rem;
         margin-bottom: 1rem;
+        filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
     }
     
     .feature-title {

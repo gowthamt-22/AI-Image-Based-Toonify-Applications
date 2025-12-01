@@ -25,381 +25,327 @@ processor = ImageProcessor()
 if 'authenticated' not in st.session_state or not st.session_state.authenticated:
     st.error("❌ Please login to access Toonify Studio")
     if st.button("Go to Login"):
-        st.switch_page("pages/login.py")
+        st.switch_page("pages/auth.py")
     st.stop()
 
-# Initialize session state for images
+# Initialize session state
 if 'original_image' not in st.session_state:
     st.session_state.original_image = None
 if 'processed_image' not in st.session_state:
     st.session_state.processed_image = None
-if 'processing_history' not in st.session_state:
-    st.session_state.processing_history = []
+if 'current_style' not in st.session_state:
+    st.session_state.current_style = None
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'dark'
 
-# Custom CSS
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-    
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
-    
-    .navbar {
-        background: white;
-        padding: 1rem 2rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin: -3rem -4rem 2rem -4rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .navbar-brand {
-        font-size: 1.8rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .studio-header {
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
-    }
-    
-    .studio-subtitle {
-        text-align: center;
-        color: #666;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    
-    .upload-box {
-        background: white;
-        padding: 3rem;
-        border-radius: 20px;
-        border: 3px dashed #667eea;
-        text-align: center;
-        margin: 2rem 0;
-        transition: all 0.3s ease;
-    }
-    
-    .upload-box:hover {
-        border-color: #764ba2;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-    }
-    
-    .image-container {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        margin: 1rem 0;
-    }
-    
-    .style-card {
-        background: white;
-        padding: 1rem;
-        border-radius: 12px;
-        border: 2px solid #e5e7eb;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin: 0.5rem 0;
-    }
-    
-    .style-card:hover {
-        border-color: #667eea;
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
-    }
-    
-    .style-icon {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .style-name {
-        font-weight: 600;
-        color: #333;
-        font-size: 1rem;
-    }
-    
-    .stButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px;
-        padding: 0.7rem 1.5rem;
-        font-weight: 600;
-        border: none;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        transition: all 0.3s ease;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .image-container {
-        animation: fadeIn 0.5s ease-out;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Theme CSS
+if st.session_state.theme == 'dark':
+    theme_css = """
+    <style>
+        .stApp {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+        .main-title {
+            color: #fff;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00fff0, #a855f7, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #888;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .style-card {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 2px solid #333;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .style-card:hover {
+            border-color: #00fff0;
+            box-shadow: 0 0 30px rgba(0, 255, 240, 0.3);
+        }
+        .section-title {
+            color: #00fff0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem 0;
+        }
+        .stButton button {
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+        }
+    </style>
+    """
+else:
+    theme_css = """
+    <style>
+        .stApp {
+            background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
+        }
+        .main-title {
+            color: #000;
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #555;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .style-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 2px solid #ddd;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .style-card:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        .section-title {
+            color: #00d4ff;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem 0;
+        }
+        .stButton button {
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+        }
+    </style>
+    """
 
-# Navigation Bar
-col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+st.markdown(theme_css, unsafe_allow_html=True)
+
+# Header with theme toggle
+col1, col2, col3 = st.columns([2, 1, 1])
 with col1:
-    st.markdown('<div class="navbar-brand">🎨 Toonify Studio</div>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-title">🎨 TOONIFY STUDIO</h1>', unsafe_allow_html=True)
 with col2:
-    if st.button("🏠 Dashboard", use_container_width=True):
-        st.switch_page("pages/dashboard.py")
+    if st.button("🌙 Dark" if st.session_state.theme == 'light' else "☀️ Light", use_container_width=True):
+        st.session_state.theme = 'light' if st.session_state.theme == 'dark' else 'dark'
+        st.rerun()
 with col3:
-    if st.button("👤 Profile", use_container_width=True):
-        st.switch_page("pages/profile.py")
-with col4:
     if st.button("🚪 Logout", use_container_width=True):
         st.session_state.authenticated = False
         st.session_state.user_data = None
         st.switch_page("landing.py")
 
+st.markdown('<p class="subtitle">Transform your photos into stunning cartoons with AI</p>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Header
-st.markdown('<div class="studio-header">🎨 Transform Your Images</div>', unsafe_allow_html=True)
-st.markdown('<div class="studio-subtitle">Upload an image and apply stunning cartoon effects</div>', unsafe_allow_html=True)
-
-# File Upload Section
-st.markdown("### 📤 Upload Image")
+# File Upload
 uploaded_file = st.file_uploader(
-    "Choose an image file",
+    "📤 Upload Your Image",
     type=['jpg', 'jpeg', 'png', 'bmp', 'webp'],
     help="Supported formats: JPG, PNG, BMP, WEBP"
 )
 
 if uploaded_file is not None:
-    # Validate and store image
+    # Load image
     with st.spinner("🔄 Loading image..."):
         valid, result = processor.validate_image(uploaded_file)
     
     if valid:
-        # Resize if needed
         original_img = processor.resize_image(result, max_size=1024)
         st.session_state.original_image = original_img
         st.success("✅ Image loaded successfully!")
         
-        # Display original and processed images side by side
-        col1, col2 = st.columns(2)
+        st.markdown("---")
+        
+        # ===== STYLES SECTION - AT THE TOP =====
+        st.markdown('<h2 class="section-title">🎨 Choose Your Style (8 Options)</h2>', unsafe_allow_html=True)
+        
+        # First Row
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.markdown("#### 🖼️ Original Image")
-            st.image(st.session_state.original_image, use_container_width=True)
-            st.caption(f"Size: {st.session_state.original_image.size[0]} x {st.session_state.original_image.size[1]} px")
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🎭</div><p style="font-weight: 700; margin-top: 0.5rem;">Classic</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="classic", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='classic'
+                    )
+                    st.session_state.current_style = "Classic"
+                st.success("✅ Applied!")
+                st.rerun()
         
         with col2:
-            st.markdown("#### ✨ Processed Image")
-            if st.session_state.processed_image:
-                st.image(st.session_state.processed_image, use_container_width=True)
-                
-                # Download button
-                img_bytes = processor.image_to_bytes(st.session_state.processed_image, format='PNG')
-                st.download_button(
-                    label="⬇️ Download Processed Image",
-                    data=img_bytes,
-                    file_name=f"toonify_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
-                    mime="image/png",
-                    use_container_width=True
-                )
-            else:
-                st.info("👈 Select a style to process your image")
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🌊</div><p style="font-weight: 700; margin-top: 0.5rem;">Smooth</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="smooth", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='smooth'
+                    )
+                    st.session_state.current_style = "Smooth"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        with col3:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">✏️</div><p style="font-weight: 700; margin-top: 0.5rem;">Pencil</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="pencil", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='pencil'
+                    )
+                    st.session_state.current_style = "Pencil"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        with col4:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🎨</div><p style="font-weight: 700; margin-top: 0.5rem;">Watercolor</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="watercolor", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='watercolor'
+                    )
+                    st.session_state.current_style = "Watercolor"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        # Second Row
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">📚</div><p style="font-weight: 700; margin-top: 0.5rem;">Comic</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="comic", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='comic'
+                    )
+                    st.session_state.current_style = "Comic"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        with col2:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🖼️</div><p style="font-weight: 700; margin-top: 0.5rem;">Oil Paint</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="oil", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='classic'
+                    )
+                    st.session_state.current_style = "Oil Paint"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        with col3:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🌟</div><p style="font-weight: 700; margin-top: 0.5rem;">Pop Art</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="pop", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='smooth'
+                    )
+                    st.session_state.current_style = "Pop Art"
+                st.success("✅ Applied!")
+                st.rerun()
+        
+        with col4:
+            st.markdown('<div class="style-card"><div style="font-size: 3rem;">🎬</div><p style="font-weight: 700; margin-top: 0.5rem;">Anime</p></div>', unsafe_allow_html=True)
+            if st.button("Apply", key="anime", use_container_width=True, type="primary"):
+                with st.spinner("🎨 Processing..."):
+                    st.session_state.processed_image = processor.convert_to_cartoon(
+                        st.session_state.original_image, style='watercolor'
+                    )
+                    st.session_state.current_style = "Anime"
+                st.success("✅ Applied!")
+                st.rerun()
         
         st.markdown("---")
         
-        # Style Selection
-        st.markdown("### 🎨 Choose a Style")
-        
-        col1, col2, col3, col4, col5 = st.columns(5)
-        
-        with col1:
-            if st.button("🎭", key="classic", use_container_width=True, help="Classic Cartoon"):
-                with st.spinner("🎨 Applying Classic Cartoon effect..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image, 
-                        style='classic'
-                    )
-                st.success("✅ Classic Cartoon applied!")
-                st.rerun()
-            st.caption("**Classic**")
-        
-        with col2:
-            if st.button("🌊", key="smooth", use_container_width=True, help="Smooth Cartoon"):
-                with st.spinner("🎨 Applying Smooth Cartoon effect..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image,
-                        style='smooth'
-                    )
-                st.success("✅ Smooth Cartoon applied!")
-                st.rerun()
-            st.caption("**Smooth**")
-        
-        with col3:
-            if st.button("✏️", key="pencil", use_container_width=True, help="Pencil Sketch"):
-                with st.spinner("🎨 Applying Pencil Sketch effect..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image,
-                        style='pencil'
-                    )
-                st.success("✅ Pencil Sketch applied!")
-                st.rerun()
-            st.caption("**Pencil**")
-        
-        with col4:
-            if st.button("🎨", key="watercolor", use_container_width=True, help="Watercolor"):
-                with st.spinner("🎨 Applying Watercolor effect..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image,
-                        style='watercolor'
-                    )
-                st.success("✅ Watercolor applied!")
-                st.rerun()
-            st.caption("**Watercolor**")
-        
-        with col5:
-            if st.button("📚", key="comic", use_container_width=True, help="Comic Book"):
-                with st.spinner("🎨 Applying Comic Book effect..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image,
-                        style='comic'
-                    )
-                st.success("✅ Comic Book applied!")
-                st.rerun()
-            st.caption("**Comic**")
-        
-        # Advanced Controls (if image is processed)
+        # ===== PARAMETERS SECTION - SEPARATE =====
         if st.session_state.processed_image:
-            st.markdown("---")
-            st.markdown("### 🎛️ Adjustments")
+            st.markdown('<h2 class="section-title">🎛️ Fine-Tune Parameters</h2>', unsafe_allow_html=True)
             
-            col1, col2 = st.columns(2)
+            col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 brightness = st.slider("💡 Brightness", 0.5, 2.0, 1.0, 0.1)
-                if brightness != 1.0:
-                    temp_img = processor.adjust_brightness(st.session_state.processed_image, brightness)
-                    st.image(temp_img, caption="Preview", use_container_width=True)
-                    if st.button("Apply Brightness", use_container_width=True):
-                        st.session_state.processed_image = temp_img
-                        st.success("✅ Brightness applied!")
-                        st.rerun()
+            with col2:
+                contrast = st.slider("🔆 Contrast", 0.5, 2.0, 1.0, 0.1)
+            with col3:
+                saturation = st.slider("🌈 Saturation", 0.0, 2.0, 1.0, 0.1)
+            with col4:
+                sharpness = st.slider("🔪 Sharpness", 0.0, 2.0, 1.0, 0.1)
+            
+            if st.button("✨ Apply Adjustments", use_container_width=True, type="primary"):
+                with st.spinner("Applying adjustments..."):
+                    adjusted = processor.adjust_image(
+                        st.session_state.processed_image,
+                        brightness=brightness,
+                        contrast=contrast,
+                        saturation=saturation,
+                        sharpness=sharpness
+                    )
+                    st.session_state.processed_image = adjusted
+                st.success("✅ Adjustments applied!")
+                st.rerun()
+            
+            st.markdown("---")
+        
+        # ===== IMAGE DISPLAY SECTION - SIDE BY SIDE (LEFT TO RIGHT) =====
+        st.markdown('<h2 class="section-title">🖼️ Transformation Result</h2>', unsafe_allow_html=True)
+        
+        # Show images side by side horizontally
+        if st.session_state.processed_image:
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### 📷 Original Image")
+                st.image(st.session_state.original_image, use_container_width=True)
+                st.caption(f"📐 Size: {st.session_state.original_image.size[0]} x {st.session_state.original_image.size[1]} pixels")
             
             with col2:
-                contrast = st.slider("🌓 Contrast", 0.5, 2.0, 1.0, 0.1)
-                if contrast != 1.0:
-                    temp_img = processor.adjust_contrast(st.session_state.processed_image, contrast)
-                    st.image(temp_img, caption="Preview", use_container_width=True)
-                    if st.button("Apply Contrast", use_container_width=True):
-                        st.session_state.processed_image = temp_img
-                        st.success("✅ Contrast applied!")
-                        st.rerun()
+                st.markdown(f"#### ✨ {st.session_state.current_style} Style")
+                st.image(st.session_state.processed_image, use_container_width=True)
+                st.caption(f"🎨 Style Applied: {st.session_state.current_style}")
+            
+            # Download button below images
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_a, col_b, col_c = st.columns([1, 2, 1])
+            with col_b:
+                img_bytes = processor.image_to_bytes(st.session_state.processed_image, format='PNG')
+                st.download_button(
+                    label="⬇️ Download Transformed Image",
+                    data=img_bytes,
+                    file_name=f"toonify_{st.session_state.current_style.lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                    mime="image/png",
+                    use_container_width=True,
+                    type="primary"
+                )
+        else:
+            # Just show original image until style is selected
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("#### 📷 Original Image")
+                st.image(st.session_state.original_image, use_container_width=True)
+                st.caption(f"📐 Size: {st.session_state.original_image.size[0]} x {st.session_state.original_image.size[1]} pixels")
+            with col2:
+                st.markdown("#### ✨ Transformed Image")
+                st.info("👆 Select a style above to see the transformation!")
         
         # Reset button
         st.markdown("---")
-        if st.button("🔄 Start New Image", use_container_width=False):
+        if st.button("🔄 Upload New Image", use_container_width=False):
             st.session_state.original_image = None
             st.session_state.processed_image = None
+            st.session_state.current_style = None
             st.rerun()
     
     else:
         st.error(f"❌ {result}")
 
 else:
-    # Upload prompt
-    st.markdown("""
-    <div class="upload-box">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
-        <h3>Upload Your Image</h3>
-        <p style="color: #666; margin-top: 1rem;">
-            Drag and drop or click to browse<br>
-            Supports: JPG, PNG, BMP, WEBP
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Style Preview Cards
-    st.markdown("### 🎨 Available Styles")
-    
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        st.markdown("""
-        <div class="style-card">
-            <div class="style-icon">🎭</div>
-            <div class="style-name">Classic</div>
-            <p style="font-size: 0.8rem; color: #666;">Traditional cartoon with edge detection</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="style-card">
-            <div class="style-icon">🌊</div>
-            <div class="style-name">Smooth</div>
-            <p style="font-size: 0.8rem; color: #666;">Smooth cartoon with soft edges</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div class="style-card">
-            <div class="style-icon">✏️</div>
-            <div class="style-name">Pencil</div>
-            <p style="font-size: 0.8rem; color: #666;">Hand-drawn pencil sketch</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown("""
-        <div class="style-card">
-            <div class="style-icon">🎨</div>
-            <div class="style-name">Watercolor</div>
-            <p style="font-size: 0.8rem; color: #666;">Artistic watercolor painting</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col5:
-        st.markdown("""
-        <div class="style-card">
-            <div class="style-icon">📚</div>
-            <div class="style-name">Comic</div>
-            <p style="font-size: 0.8rem; color: #666;">Comic book style with strong edges</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-# Footer
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #666; padding: 2rem 0;">
-    <p><strong>🎨 Toonify Studio</strong> - Transform your images with AI-powered cartoon effects</p>
-    <p style="font-size: 0.9rem;">Logged in as: <strong>{}</strong></p>
-</div>
-""".format(st.session_state.user_data['username']), unsafe_allow_html=True)
+    st.info("👆 Upload an image to get started!")
