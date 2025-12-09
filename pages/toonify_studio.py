@@ -131,14 +131,17 @@ else:
 st.markdown(theme_css, unsafe_allow_html=True)
 
 # Header with theme toggle
-col1, col2, col3 = st.columns([2, 1, 1])
+col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
 with col1:
     st.markdown('<h1 class="main-title">🎨 TOONIFY STUDIO</h1>', unsafe_allow_html=True)
 with col2:
+    if st.button("📜 History", use_container_width=True):
+        st.switch_page("pages/payment_history.py")
+with col3:
     if st.button("🌙 Dark" if st.session_state.theme == 'light' else "☀️ Light", use_container_width=True):
         st.session_state.theme = 'light' if st.session_state.theme == 'dark' else 'dark'
         st.rerun()
-with col3:
+with col4:
     if st.button("🚪 Logout", use_container_width=True):
         st.session_state.authenticated = False
         st.session_state.user_data = None
@@ -175,23 +178,45 @@ if uploaded_file is not None:
         with col1:
             st.markdown('<div class="style-card"><div style="font-size: 3rem;">🎭</div><p style="font-weight: 700; margin-top: 0.5rem;">Classic</p></div>', unsafe_allow_html=True)
             if st.button("Apply", key="classic", use_container_width=True, type="primary"):
-                with st.spinner("🎨 Processing..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image, style='classic'
-                    )
-                    st.session_state.current_style = "Classic"
-                st.success("✅ Applied!")
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                status_text.text("🎨 Initializing...")
+                progress_bar.progress(20)
+                
+                status_text.text("🎨 Applying cartoon effect...")
+                progress_bar.progress(50)
+                
+                st.session_state.processed_image = processor.convert_to_cartoon(
+                    st.session_state.original_image, style='classic'
+                )
+                st.session_state.current_style = "Classic"
+                
+                progress_bar.progress(100)
+                status_text.text("✅ Complete!")
+                st.balloons()
                 st.rerun()
         
         with col2:
             st.markdown('<div class="style-card"><div style="font-size: 3rem;">🌊</div><p style="font-weight: 700; margin-top: 0.5rem;">Smooth</p></div>', unsafe_allow_html=True)
             if st.button("Apply", key="smooth", use_container_width=True, type="primary"):
-                with st.spinner("🎨 Processing..."):
-                    st.session_state.processed_image = processor.convert_to_cartoon(
-                        st.session_state.original_image, style='smooth'
-                    )
-                    st.session_state.current_style = "Smooth"
-                st.success("✅ Applied!")
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                status_text.text("🎨 Initializing...")
+                progress_bar.progress(20)
+                
+                status_text.text("🎨 Creating smooth effect...")
+                progress_bar.progress(50)
+                
+                st.session_state.processed_image = processor.convert_to_cartoon(
+                    st.session_state.original_image, style='smooth'
+                )
+                st.session_state.current_style = "Smooth"
+                
+                progress_bar.progress(100)
+                status_text.text("✅ Complete!")
+                st.balloons()
                 st.rerun()
         
         with col3:
@@ -312,19 +337,47 @@ if uploaded_file is not None:
                 st.image(st.session_state.processed_image, use_container_width=True)
                 st.caption(f"🎨 Style Applied: {st.session_state.current_style}")
             
-            # Download button below images
+            # Download/Payment button below images
             st.markdown("<br>", unsafe_allow_html=True)
             col_a, col_b, col_c = st.columns([1, 2, 1])
             with col_b:
-                img_bytes = processor.image_to_bytes(st.session_state.processed_image, format='PNG')
-                st.download_button(
-                    label="⬇️ Download Transformed Image",
-                    data=img_bytes,
-                    file_name=f"toonify_{st.session_state.current_style.lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
-                    mime="image/png",
-                    use_container_width=True,
-                    type="primary"
-                )
+                # Generate unique image ID for payment tracking
+                import hashlib
+                image_id = hashlib.md5(f"{st.session_state.user_data['user_id']}_{datetime.now().isoformat()}_{st.session_state.current_style}".encode()).hexdigest()
+                
+                # Check if user has already paid for this image
+                user_id = st.session_state.user_data['user_id']
+                has_paid, payment_info = backend.verify_payment(user_id, image_id)
+                
+                if has_paid:
+                    # User has paid - allow download
+                    img_bytes = processor.image_to_bytes(st.session_state.processed_image, format='PNG')
+                    st.download_button(
+                        label="⬇️ Download High-Quality Image",
+                        data=img_bytes,
+                        file_name=f"toonify_{st.session_state.current_style.lower()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                        mime="image/png",
+                        use_container_width=True,
+                        type="primary"
+                    )
+                    st.success("✅ Payment verified - Download available")
+                else:
+                    # User needs to pay first
+                    st.markdown("""
+                    <div style='text-align: center; padding: 1rem; background: rgba(255, 193, 7, 0.1); border-radius: 10px; margin-bottom: 1rem;'>
+                        <p style='color: #ffc107; font-size: 1.1rem; margin: 0;'>
+                            💎 Premium Download - $2.99
+                        </p>
+                        <p style='color: #999; font-size: 0.9rem; margin: 0.5rem 0 0 0;'>
+                            High-resolution, no watermark, commercial license
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if st.button("💳 Pay & Download ($2.99)", use_container_width=True, type="primary"):
+                        # Store image ID for payment processing
+                        st.session_state.pending_payment_image_id = image_id
+                        st.switch_page("pages/payment.py")
         else:
             # Just show original image until style is selected
             col1, col2 = st.columns(2)

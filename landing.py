@@ -16,7 +16,7 @@ st.markdown("""
         background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
     }
     .main .block-container {
-        padding-top: 3rem;
+        padding-top: 1rem;
     }
     h1, h2, h3 {
         color: #ffffff !important;
@@ -25,71 +25,79 @@ st.markdown("""
         color: #cccccc !important;
         font-size: 1.1rem;
     }
+    .glowing-title {
+        text-align: center;
+        font-size: 4.5rem;
+        background: linear-gradient(135deg, #00fff0, #a855f7, #ff006e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: glow 2s ease-in-out infinite alternate;
+        text-shadow: 0 0 20px rgba(0,255,240,0.5), 0 0 40px rgba(168,85,247,0.5), 0 0 60px rgba(255,0,110,0.5);
+    }
+    @keyframes glow {
+        from {
+            filter: drop-shadow(0 0 10px rgba(0,255,240,0.8)) drop-shadow(0 0 20px rgba(168,85,247,0.8));
+        }
+        to {
+            filter: drop-shadow(0 0 20px rgba(168,85,247,0.8)) drop-shadow(0 0 40px rgba(255,0,110,0.8));
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
+# Top Navigation with Login
+col_logo, col_space, col_login = st.columns([2, 2, 1])
+with col_logo:
+    st.markdown("<h2 style='color: #00fff0; margin: 0;'>🎨 TOONIFY</h2>", unsafe_allow_html=True)
+with col_login:
+    if st.button("🔐 LOGIN / REGISTER", use_container_width=True, type="primary"):
+        st.switch_page("pages/auth.py")
+
+st.markdown("<hr style='border: 1px solid #333; margin: 1rem 0;'>", unsafe_allow_html=True)
+
 # Hero Section
-st.markdown("<h1 style='text-align: center; font-size: 4.5rem; background: linear-gradient(135deg, #00fff0, #a855f7, #ff006e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>🎨 TOONIFY</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='glowing-title'>🎨 TOONIFY</h1>", unsafe_allow_html=True)
 
 st.markdown("<h2 style='text-align: center; font-size: 2.5rem; margin-top: -1rem;'>Transform Your Images into Stunning Cartoons</h2>", unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; font-size: 1.3rem; color: #888; margin-bottom: 2rem;'>Powered by cutting-edge AI technology. Toonify converts your photos into beautiful cartoon-style artwork in seconds.</p>", unsafe_allow_html=True)
 
-# Buttons
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("🔐 LOGIN", use_container_width=True, type="primary"):
-            st.switch_page("pages/auth.py")
-    with col_b:
-        if st.button("📝 REGISTER", use_container_width=True):
-            st.switch_page("pages/auth.py")
-
-st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Example transformations
-st.markdown("<h3 style='text-align: center; color: #00fff0; font-size: 2rem; margin: 2rem 0 1.5rem 0;'>✨ Example Transformations</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #00fff0; font-size: 2rem; margin: 2rem 0 1.5rem 0;'>✨ See The Magic</h3>", unsafe_allow_html=True)
 
-col_left, col_center, col_right = st.columns([1, 3, 1])
-with col_center:
-    # Landscape
-    st.markdown("<p style='text-align: center; color: #a855f7; font-weight: 700; font-size: 1.1rem;'>Landscape</p>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop", width=300, caption="Original")
+# Create a more attractive before/after layout
+examples = [
+    {
+        "title": "🏔️ Landscape",
+        "before": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop",
+        "after": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop&sat=180&con=130"
+    },
+    {
+        "title": "👤 Portrait", 
+        "before": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop",
+        "after": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop&sat=160"
+    },
+    {
+        "title": "🐾 Animals",
+        "before": "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=200&fit=crop",
+        "after": "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=200&fit=crop&sat=160"
+    }
+]
+
+for example in examples:
+    st.markdown(f"<h4 style='text-align: center; color: #a855f7; margin: 2rem 0 1rem 0;'>{example['title']}</h4>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop&sat=150&con=120", width=300, caption="Cartoon")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Animals
-    st.markdown("<p style='text-align: center; color: #a855f7; font-weight: 700; font-size: 1.1rem;'>Animals</p>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=250&fit=crop", width=300, caption="Original")
-    with col2:
-        st.image("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=250&fit=crop&sat=140&con=110", width=300, caption="Cartoon")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Architecture
-    st.markdown("<p style='text-align: center; color: #a855f7; font-weight: 700; font-size: 1.1rem;'>Architecture</p>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=250&fit=crop", width=300, caption="Original")
-    with col2:
-        st.image("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=250&fit=crop&sat=130", width=300, caption="Cartoon")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Objects
-    st.markdown("<p style='text-align: center; color: #a855f7; font-weight: 700; font-size: 1.1rem;'>Objects</p>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        st.image("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=250&fit=crop", width=300, caption="Original")
-    with col2:
-        st.image("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=250&fit=crop&sat=140&con=120", width=300, caption="Cartoon")
+        subcol1, subcol2 = st.columns(2)
+        with subcol1:
+            st.markdown("<p style='text-align: center; color: #00fff0; font-weight: 600; margin-bottom: 0.5rem;'>BEFORE</p>", unsafe_allow_html=True)
+            st.image(example["before"], use_container_width=True)
+        with subcol2:
+            st.markdown("<p style='text-align: center; color: #ff006e; font-weight: 600; margin-bottom: 0.5rem;'>AFTER</p>", unsafe_allow_html=True)
+            st.image(example["after"], use_container_width=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
 
@@ -244,12 +252,15 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 
 # Footer
 st.markdown("""
-<div style='text-align: center; padding: 3rem; border-top: 2px solid #333; margin-top: 4rem;'>
-    <p style='color: #888; font-size: 1rem;'>
+<div style='text-align: center; padding: 2rem 1rem; border-top: 1px solid #333; margin-top: 3rem;'>
+    <p style='color: #888; font-size: 0.9rem; margin-bottom: 0.5rem;'>
+        📧 support@toonify.com • 📱 +91 80 1234 5678 • 📍 Bangalore, India
+    </p>
+    <p style='color: #888; font-size: 1rem; margin: 0.5rem 0;'>
         Crafted with ❤️ by <span style='background: linear-gradient(135deg, #00fff0, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;'>TOONIFY TEAM</span>
     </p>
-    <p style='color: #666; font-size: 0.9rem; margin-top: 1rem;'>
-        © 2025 Toonify • All Rights Reserved • AI-Powered Image Transformation
+    <p style='color: #666; font-size: 0.85rem; margin-top: 0.5rem;'>
+        © 2025 Toonify • All Rights Reserved
     </p>
 </div>
 """, unsafe_allow_html=True)

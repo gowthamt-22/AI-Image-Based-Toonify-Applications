@@ -36,14 +36,12 @@ st.markdown("""
     }
     
     .block-container {
-        padding: 3rem !important;
+        padding: 2rem 3rem !important;
+        padding-top: 1rem !important;
     }
     
     .login-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        min-height: auto;
     }
     
     .stTextInput>div>div>input {
@@ -103,13 +101,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+if st.button("← Back to Home", key="back_home"):
+    st.switch_page("landing.py")
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown('<h1 class="login-title">LOGIN</h1>', unsafe_allow_html=True)
     st.markdown('<p class="login-subtitle">Welcome back to Toonify!</p>', unsafe_allow_html=True)
-    
-    if st.button("← Back to Home"):
-        st.switch_page("landing.py")
     
     st.markdown("<br>", unsafe_allow_html=True)
     

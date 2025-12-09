@@ -71,131 +71,122 @@ class ImageProcessor:
             return self._classic_cartoon(img)
     
     def _classic_cartoon(self, img):
-        """Classic cartoon effect with edge detection"""
-        # Enhance image quality first
-        img = self.enhance_quality(img)
+        """Classic cartoon effect - Clean and accurate"""
+        # Reduce noise
+        img = cv2.medianBlur(img, 5)
         
-        # Apply bilateral filter for smoothing while preserving edges
-        color = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
-        
-        # Convert to grayscale
+        # Create edge mask
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.medianBlur(gray, 5)
+        edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
         
-        # Apply median blur
-        gray = cv2.medianBlur(gray, 7)
+        # Bilateral filter - preserve edges while smoothing
+        color = cv2.bilateralFilter(img, 9, 300, 300)
         
-        # Detect edges using adaptive threshold
-        edges = cv2.adaptiveThreshold(
-            gray, 255,
-            cv2.ADAPTIVE_THRESH_MEAN_C,
-            cv2.THRESH_BINARY,
-            blockSize=9,
-            C=2
-        )
-        
-        # Combine color and edges
+        # Combine color with edges
         cartoon = cv2.bitwise_and(color, color, mask=edges)
         
-        # Convert back to RGB
+        # Convert to RGB
         cartoon = cv2.cvtColor(cartoon, cv2.COLOR_BGR2RGB)
         return Image.fromarray(cartoon)
     
     def _smooth_cartoon(self, img):
-        """Smooth cartoon with multiple bilateral filters"""
-        # Enhance image quality first
-        img = self.enhance_quality(img)
+        """Smooth cartoon - Clean and simple"""
+        # Apply bilateral filter multiple times for smooth effect
+        for i in range(9):
+            img = cv2.bilateralFilter(img, 9, 75, 75)
         
-        # Apply bilateral filter multiple times
-        for _ in range(3):
-            img = cv2.bilateralFilter(img, d=9, sigmaColor=80, sigmaSpace=80)
+        # Simple color quantization
+        data = np.float32(img).reshape((-1, 3))
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        k = 9
+        _, labels, centers = cv2.kmeans(data, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        centers = np.uint8(centers)
+        result = centers[labels.flatten()].reshape(img.shape)
         
-        # Quantize colors to reduce color palette
-        div = 64
-        img = img // div * div + div // 2
+        # Convert to RGB
+        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(result)
+        
+        # Final bilateral filter
+        smooth = cv2.bilateralFilter(smooth, d=9, sigmaColor=100, sigmaSpace=100)
         
         # Convert back to RGB
-        cartoon = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        cartoon = cv2.cvtColor(smooth, cv2.COLOR_BGR2RGB)
         return Image.fromarray(cartoon)
     
     def _pencil_sketch(self, img):
-        """Pencil sketch effect"""
-        # Enhance image quality first
-        img = self.enhance_quality(img)
-        
+        """Pencil sketch - Artistic drawing"""
         # Convert to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # Invert grayscale
+        # Denoise
+        gray = cv2.fastNlMeansDenoising(gray, None, 10, 7, 21)
+        
+        # Invert the image
         inv_gray = 255 - gray
         
         # Apply Gaussian blur
-        blur = cv2.GaussianBlur(inv_gray, (21, 21), 0)
+        blur = cv2.GaussianBlur(inv_gray, (25, 25), 0)
         
         # Invert blurred image
         inv_blur = 255 - blur
         
-        # Divide grayscale by inverted blurred image
+        # Create sketch using divide
         sketch = cv2.divide(gray, inv_blur, scale=256.0)
         
-        # Convert to RGB for display
+        # Enhance contrast
+        sketch = cv2.equalizeHist(sketch)
+        
+        # Add slight texture
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        sketch = cv2.filter2D(sketch, -1, kernel * 0.5)
+        
+        # Convert to RGB
         sketch_rgb = cv2.cvtColor(sketch, cv2.COLOR_GRAY2RGB)
         return Image.fromarray(sketch_rgb)
     
     def _watercolor_effect(self, img):
-        """Watercolor painting effect"""
-        # Enhance image quality first
-        img = self.enhance_quality(img)
+        """Watercolor painting effect - Clean and artistic"""
+        # Bilateral filter for smooth base
+        img = cv2.bilateralFilter(img, 9, 75, 75)
         
-        # Apply bilateral filter for smoothing
-        color = cv2.bilateralFilter(img, d=9, sigmaColor=90, sigmaSpace=90)
+        # Apply stylization
+        result = cv2.stylization(img, sigma_s=60, sigma_r=0.6)
         
-        # Apply median blur for artistic effect
-        color = cv2.medianBlur(color, 15)
+        # Slight blur for watercolor feel
+        result = cv2.medianBlur(result, 5)
         
-        # Reduce color palette
-        div = 32
-        color = color // div * div + div // 2
-        
-        # Apply slight blur for watercolor feel
-        watercolor = cv2.GaussianBlur(color, (5, 5), 0)
-        
-        # Convert back to RGB
-        watercolor = cv2.cvtColor(watercolor, cv2.COLOR_BGR2RGB)
-        return Image.fromarray(watercolor)
+        # Convert to RGB
+        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(result)
     
     def _comic_book_style(self, img):
-        """Comic book style with strong edges"""
-        # Enhance image quality first
-        img = self.enhance_quality(img)
+        """Comic book style - Clean and bold"""
+        # Reduce noise
+        img = cv2.medianBlur(img, 7)
         
-        # Apply bilateral filter
-        color = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
+        # Edge detection
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
         
-        # Quantize colors more aggressively
-        div = 64
-        color = color // div * div + div // 2
+        # Color quantization for comic effect
+        data = np.float32(img).reshape((-1, 3))
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        k = 8
+        _, labels, centers = cv2.kmeans(data, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        centers = np.uint8(centers)
+        quantized = centers[labels.flatten()].reshape(img.shape)
         
-        # Convert to grayscale for edge detection
-        gray = cv2.cvtColor(color, cv2.COLOR_BGR2GRAY)
+        # Bilateral filter
+        quantized = cv2.bilateralFilter(quantized, 9, 300, 300)
         
-        # Apply median blur
-        gray = cv2.medianBlur(gray, 5)
+        # Combine with edges
+        comic = cv2.bitwise_and(quantized, quantized, mask=edges)
         
-        # Detect edges with stronger threshold
-        edges = cv2.adaptiveThreshold(
-            gray, 255,
-            cv2.ADAPTIVE_THRESH_MEAN_C,
-            cv2.THRESH_BINARY,
-            blockSize=5,
-            C=2
-        )
-        
-        # Thicken edges
-        kernel = np.ones((2, 2), np.uint8)
-        edges = cv2.erode(edges, kernel, iterations=1)
-        
-        # Combine color and edges
-        comic = cv2.bitwise_and(color, color, mask=edges)
+        # Convert to RGB
+        comic = cv2.cvtColor(comic, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(comic)
         
         # Convert back to RGB
         comic = cv2.cvtColor(comic, cv2.COLOR_BGR2RGB)

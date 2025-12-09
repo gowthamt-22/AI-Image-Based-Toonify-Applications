@@ -12,6 +12,7 @@ class Backend:
         self.max_login_attempts = 5
         self.lockout_minutes = 30
         self.init_database()
+        self.init_payment_tables()
     
     def get_connection(self):
         """Get database connection"""
@@ -260,3 +261,143 @@ class Backend:
         }
         
         return True, "Login successful", user_data
+    
+    def init_payment_tables(self):
+        """Initialize payment-related database tables"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Payments table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payments (
+                payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                image_id TEXT NOT NULL,
+                amount REAL NOT NULL,
+                currency TEXT DEFAULT 'USD',
+                payment_method TEXT,
+                transaction_id TEXT UNIQUE,
+                payment_status TEXT DEFAULT 'pending',
+                payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        ''')
+        
+        # Downloaded images table (track what users have paid for)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_downloads (
+                download_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                image_id TEXT NOT NULL,
+                payment_id INTEGER NOT NULL,
+                download_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(user_id),
+                FOREIGN KEY (payment_id) REFERENCES payments(payment_id)
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+    
+    def create_payment(self, user_id, image_id, amount, payment_method='card'):
+        """Create a new payment record"""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            
+            # Generate transaction ID
+            import uuid
+            transaction_id = f"TXN_{uuid.uuid4().hex[:12].upper()}"
+            
+            cursor.execute('''
+                INSERT INTO payments (user_id, image_id, amount, payment_method, transaction_id, payment_status)
+                VALUES (?, ?, ?, ?, ?, 'pending')
+            ''', (user_id, image_id, amount, payment_method, transaction_id))
+            
+            payment_id = cursor.lastrowid
+            conn.commit()
+            conn.close()
+            
+            return True, "Payment initiated", {'payment_id': payment_id, 'transaction_id': transaction_id}
+        except Exception as e:
+            return False, f"Payment creation failed: {str(e)}", None
+    
+    def process_payment(self, payment_id, transaction_id):
+        """Process and confirm payment (simulate payment gateway)"""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            
+            # Update payment status
+            cursor.execute('''
+                UPDATE payments 
+                SET payment_status = 'completed'
+                WHERE payment_id = ? AND transaction_id = ?
+            ''', (payment_id, transaction_id))
+            
+            if cursor.rowcount == 0:
+                conn.close()
+                return False, "Payment not found"
+            
+            conn.commit()
+            conn.close()
+            
+            return True, "Payment processed successfully"
+        except Exception as e:
+            return False, f"Payment processing failed: {str(e)}"
+    
+    def verify_payment(self, user_id, image_id):
+        """Verify if user has paid for this image"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT payment_id, transaction_id, payment_status 
+            FROM payments 
+            WHERE user_id = ? AND image_id = ? AND payment_status = 'completed'
+            ORDER BY payment_date DESC
+            LIMIT 1
+        ''', (user_id, image_id))
+        
+        payment = cursor.fetchone()
+        conn.close()
+        
+        if payment:
+            return True, dict(payment)
+        return False, None
+    
+    def record_download(self, user_id, image_id, payment_id):
+        """Record that user downloaded the image"""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO user_downloads (user_id, image_id, payment_id)
+                VALUES (?, ?, ?)
+            ''', (user_id, image_id, payment_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return True, "Download recorded"
+        except Exception as e:
+            return False, f"Failed to record download: {str(e)}"
+    
+    def get_user_payment_history(self, user_id):
+        """Get payment history for a user"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT payment_id, image_id, amount, currency, payment_method, 
+                   transaction_id, payment_status, payment_date
+            FROM payments 
+            WHERE user_id = ?
+            ORDER BY payment_date DESC
+        ''', (user_id,))
+        
+        payments = cursor.fetchall()
+        conn.close()
+        
+        return [dict(payment) for payment in payments]

@@ -88,20 +88,6 @@ with col2:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Example images showcase
-st.markdown("<p style='text-align: center; color: #888; font-size: 1.1rem; margin-bottom: 1rem;'>✨ Transform Any Photo into Art</p>", unsafe_allow_html=True)
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop", use_container_width=True)
-with col2:
-    st.image("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop", use_container_width=True)
-with col3:
-    st.image("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=200&h=200&fit=crop", use_container_width=True)
-with col4:
-    st.image("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop", use_container_width=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
 # Tabs for Login/Register
 tab1, tab2 = st.tabs(["LOGIN", "REGISTER"])
 
@@ -154,6 +140,20 @@ with tab2:
                 st.error("❌ Passwords don't match")
         else:
             st.warning("⚠️ Please fill in all fields")
+
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+# Example images showcase
+st.markdown("<p style='text-align: center; color: #888; font-size: 1.1rem; margin-bottom: 1rem;'>✨ Transform Any Photo into Art</p>", unsafe_allow_html=True)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop", use_container_width=True)
+with col2:
+    st.image("https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop", use_container_width=True)
+with col3:
+    st.image("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=200&h=200&fit=crop", use_container_width=True)
+with col4:
+    st.image("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop", use_container_width=True)
 
 # If authenticated, redirect to toonify studio
 if st.session_state.authenticated:
