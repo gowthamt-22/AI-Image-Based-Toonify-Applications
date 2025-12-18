@@ -27,25 +27,63 @@ if 'authenticated' not in st.session_state or not st.session_state.authenticated
         st.switch_page("pages/auth.py")
     st.stop()
 
-# Check if there's an image to pay for
-if 'pending_payment_image_id' not in st.session_state:
-    st.warning("⚠️ No image selected for payment")
+# Check if there's an image OR premium style to pay for
+if 'pending_payment_image_id' not in st.session_state and 'pending_style' not in st.session_state:
+    st.warning("⚠️ No payment required")
     if st.button("Back to Studio"):
         st.switch_page("pages/toonify_studio.py")
     st.stop()
 
-# Theme CSS
+# Determine payment type and amount
+payment_type = "premium_style" if 'pending_style' in st.session_state else "image_download"
+style_name = "Premium Style"  # Default
+
+if payment_type == "premium_style":
+    amount = 99.00
+    style_name = st.session_state.get('pending_style_name', 'Premium Style')
+    payment_title = f"🎨 {style_name} Premium Style"
+    payment_description = f"Unlock the {style_name} effect forever"
+else:
+    amount = 2.99
+    payment_title = "🎨 Premium Cartoon Download"
+    payment_description = "Download your cartoonized image"
+
+# Theme CSS - Matching Landing Page
 theme_css = """
 <style>
-    .stApp {
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
+    
+    * {
+        font-family: 'Poppins', sans-serif;
     }
+    
+    /* Vibrant Animated Gradient Background - Same as Landing */
+    .stApp {
+        background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe);
+        background-size: 400% 400%;
+        animation: gradientBG 12s ease infinite;
+    }
+    
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Hide Sidebar completely */
+    [data-testid="stSidebar"], section[data-testid="stSidebar"], .css-1d391kg {
+        display: none !important;
+    }
+    #MainMenu, footer, header {
+        visibility: hidden !important;
+    }
+    
     .payment-container {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 24px;
         padding: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(20px);
     }
     .price-tag {
         font-size: 3rem;
@@ -80,25 +118,37 @@ with col_center:
     # Payment details
     st.markdown("<div class='payment-container'>", unsafe_allow_html=True)
     
-    st.markdown("<h2 style='color: #fff; text-align: center;'>🎨 Premium Cartoon Download</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color: #fff; text-align: center;'>{payment_title}</h2>", unsafe_allow_html=True)
     
     # Price
-    st.markdown("<div class='price-tag'>$2.99</div>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #999;'>One-time payment for high-quality download</p>", unsafe_allow_html=True)
+    st.markdown(f"<div class='price-tag'>₹{amount:.2f}</div>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color: #999;'>{payment_description}</p>", unsafe_allow_html=True)
     
     st.markdown("---")
     
     # What's included
     st.markdown("<h3 style='color: #fff;'>✨ What's Included:</h3>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='feature-list'>
-        ✅ High-resolution cartoonized image<br>
-        ✅ PNG format with transparency support<br>
-        ✅ Lifetime download access<br>
-        ✅ No watermarks<br>
-        ✅ Commercial use license
-    </div>
-    """, unsafe_allow_html=True)
+    
+    if payment_type == "premium_style":
+        st.markdown(f"""
+        <div class='feature-list'>
+            ✅ Unlock {style_name} effect forever<br>
+            ✅ Unlimited use of this style<br>
+            ✅ High-quality transformations<br>
+            ✅ All future updates included<br>
+            ✅ Commercial use allowed
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class='feature-list'>
+            ✅ High-resolution cartoonized image<br>
+            ✅ PNG format with transparency support<br>
+            ✅ Lifetime download access<br>
+            ✅ No watermarks<br>
+            ✅ Commercial use license
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -134,7 +184,7 @@ with col_center:
     # Process payment button
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
     with col_btn2:
-        if st.button("🔒 Pay $2.99", type="primary", use_container_width=True):
+        if st.button(f"🔒 Pay ₹{amount:.2f}", type="primary", use_container_width=True):
             # Validate inputs for card payment
             if payment_method == "Credit/Debit Card":
                 if not card_name or not card_number or not cvv:
@@ -148,19 +198,82 @@ with col_center:
                     with st.spinner("🔄 Processing payment..."):
                         time.sleep(2)  # Simulate payment processing
                         
-                        # Create payment record
+                        if payment_type == "premium_style":
+                            # Unlock premium style
+                            style_key = st.session_state.pending_style
+                            if 'purchased_styles' not in st.session_state:
+                                st.session_state.purchased_styles = []
+                            st.session_state.purchased_styles.append(style_key)
+                            
+                            # Clear pending style
+                            del st.session_state.pending_style
+                            del st.session_state.pending_style_name
+                            
+                            st.success(f"✅ {style_name} unlocked successfully!")
+                            time.sleep(1)
+                            st.switch_page("pages/toonify_studio.py")
+                        else:
+                            # Process image download payment
+                            user_id = st.session_state.user_data['user_id']
+                            image_id = st.session_state.pending_payment_image_id
+                            
+                            success, message, payment_data = backend.create_payment(
+                                user_id=user_id,
+                                image_id=image_id,
+                                amount=amount,
+                                payment_method=payment_method
+                            )
+                            
+                            if success:
+                                # Process the payment
+                                payment_id = payment_data['payment_id']
+                                transaction_id = payment_data['transaction_id']
+                                
+                                success, msg = backend.process_payment(payment_id, transaction_id)
+                                
+                                if success:
+                                    st.session_state.payment_completed = True
+                                    st.session_state.payment_id = payment_id
+                                    st.session_state.transaction_id = transaction_id
+                                    st.success("✅ Payment successful!")
+                                    time.sleep(1)
+                                    st.switch_page("pages/payment_success.py")
+                                else:
+                                    st.error(f"❌ {msg}")
+                            else:
+                                st.error(f"❌ {message}")
+            else:
+                # For other payment methods, simulate quick processing
+                with st.spinner(f"🔄 Redirecting to {payment_method}..."):
+                    time.sleep(2)
+                    
+                    if payment_type == "premium_style":
+                        # Unlock premium style
+                        style_key = st.session_state.pending_style
+                        if 'purchased_styles' not in st.session_state:
+                            st.session_state.purchased_styles = []
+                        st.session_state.purchased_styles.append(style_key)
+                        
+                        # Clear pending style
+                        del st.session_state.pending_style
+                        del st.session_state.pending_style_name
+                        
+                        st.success(f"✅ {style_name} unlocked successfully!")
+                        time.sleep(1)
+                        st.switch_page("pages/toonify_studio.py")
+                    else:
+                        # Process image download payment
                         user_id = st.session_state.user_data['user_id']
                         image_id = st.session_state.pending_payment_image_id
                         
                         success, message, payment_data = backend.create_payment(
                             user_id=user_id,
                             image_id=image_id,
-                            amount=2.99,
+                            amount=amount,
                             payment_method=payment_method
                         )
                         
                         if success:
-                            # Process the payment
                             payment_id = payment_data['payment_id']
                             transaction_id = payment_data['transaction_id']
                             
@@ -177,45 +290,19 @@ with col_center:
                                 st.error(f"❌ {msg}")
                         else:
                             st.error(f"❌ {message}")
-            else:
-                # For other payment methods, simulate quick processing
-                with st.spinner(f"🔄 Redirecting to {payment_method}..."):
-                    time.sleep(2)
-                    
-                    user_id = st.session_state.user_data['user_id']
-                    image_id = st.session_state.pending_payment_image_id
-                    
-                    success, message, payment_data = backend.create_payment(
-                        user_id=user_id,
-                        image_id=image_id,
-                        amount=2.99,
-                        payment_method=payment_method
-                    )
-                    
-                    if success:
-                        payment_id = payment_data['payment_id']
-                        transaction_id = payment_data['transaction_id']
-                        
-                        success, msg = backend.process_payment(payment_id, transaction_id)
-                        
-                        if success:
-                            st.session_state.payment_completed = True
-                            st.session_state.payment_id = payment_id
-                            st.session_state.transaction_id = transaction_id
-                            st.success("✅ Payment successful!")
-                            time.sleep(1)
-                            st.switch_page("pages/payment_success.py")
-                        else:
-                            st.error(f"❌ {msg}")
-                    else:
-                        st.error(f"❌ {message}")
     
     # Cancel button
     st.markdown("<br>", unsafe_allow_html=True)
     col_cancel1, col_cancel2, col_cancel3 = st.columns([1, 2, 1])
     with col_cancel2:
         if st.button("Cancel Payment", use_container_width=True):
-            del st.session_state.pending_payment_image_id
+            # Clear payment state
+            if 'pending_payment_image_id' in st.session_state:
+                del st.session_state.pending_payment_image_id
+            if 'pending_style' in st.session_state:
+                del st.session_state.pending_style
+            if 'pending_style_name' in st.session_state:
+                del st.session_state.pending_style_name
             st.switch_page("pages/toonify_studio.py")
     
     # Security badges
