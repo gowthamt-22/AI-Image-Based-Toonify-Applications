@@ -27,26 +27,18 @@ if 'authenticated' not in st.session_state or not st.session_state.authenticated
         st.switch_page("pages/auth.py")
     st.stop()
 
-# Check if there's an image OR premium style to pay for
-if 'pending_payment_image_id' not in st.session_state and 'pending_style' not in st.session_state:
+# Check if there's a download to pay for
+if 'pending_style' not in st.session_state:
     st.warning("⚠️ No payment required")
     if st.button("Back to Studio"):
         st.switch_page("pages/toonify_studio.py")
     st.stop()
 
-# Determine payment type and amount
-payment_type = "premium_style" if 'pending_style' in st.session_state else "image_download"
-style_name = "Premium Style"  # Default
-
-if payment_type == "premium_style":
-    amount = 99.00
-    style_name = st.session_state.get('pending_style_name', 'Premium Style')
-    payment_title = f"🎨 {style_name} Premium Style"
-    payment_description = f"Unlock the {style_name} effect forever"
-else:
-    amount = 2.99
-    payment_title = "🎨 Premium Cartoon Download"
-    payment_description = "Download your cartoonized image"
+# Payment is for downloading processed image
+amount = 99.00
+style_name = st.session_state.get('pending_style_name', 'Style')
+payment_title = f"🎨 {style_name} Download"
+payment_description = f"Download your {style_name} transformed image"
 
 # Theme CSS - Matching Landing Page
 theme_css = """
@@ -129,26 +121,15 @@ with col_center:
     # What's included
     st.markdown("<h3 style='color: #fff;'>✨ What's Included:</h3>", unsafe_allow_html=True)
     
-    if payment_type == "premium_style":
-        st.markdown(f"""
-        <div class='feature-list'>
-            ✅ Unlock {style_name} effect forever<br>
-            ✅ Unlimited use of this style<br>
-            ✅ High-quality transformations<br>
-            ✅ All future updates included<br>
-            ✅ Commercial use allowed
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div class='feature-list'>
-            ✅ High-resolution cartoonized image<br>
-            ✅ PNG format with transparency support<br>
-            ✅ Lifetime download access<br>
-            ✅ No watermarks<br>
-            ✅ Commercial use license
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class='feature-list'>
+        ✅ High-resolution transformed image<br>
+        ✅ PNG format with transparency support<br>
+        ✅ Immediate download<br>
+        ✅ No watermarks<br>
+        ✅ Commercial use allowed
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -198,98 +179,37 @@ with col_center:
                     with st.spinner("🔄 Processing payment..."):
                         time.sleep(2)  # Simulate payment processing
                         
-                        if payment_type == "premium_style":
-                            # Unlock premium style
-                            style_key = st.session_state.pending_style
-                            if 'purchased_styles' not in st.session_state:
-                                st.session_state.purchased_styles = []
-                            st.session_state.purchased_styles.append(style_key)
-                            
-                            # Clear pending style
-                            del st.session_state.pending_style
-                            del st.session_state.pending_style_name
-                            
-                            st.success(f"✅ {style_name} unlocked successfully!")
-                            time.sleep(1)
-                            st.switch_page("pages/toonify_studio.py")
-                        else:
-                            # Process image download payment
-                            user_id = st.session_state.user_data['user_id']
-                            image_id = st.session_state.pending_payment_image_id
-                            
-                            success, message, payment_data = backend.create_payment(
-                                user_id=user_id,
-                                image_id=image_id,
-                                amount=amount,
-                                payment_method=payment_method
-                            )
-                            
-                            if success:
-                                # Process the payment
-                                payment_id = payment_data['payment_id']
-                                transaction_id = payment_data['transaction_id']
-                                
-                                success, msg = backend.process_payment(payment_id, transaction_id)
-                                
-                                if success:
-                                    st.session_state.payment_completed = True
-                                    st.session_state.payment_id = payment_id
-                                    st.session_state.transaction_id = transaction_id
-                                    st.success("✅ Payment successful!")
-                                    time.sleep(1)
-                                    st.switch_page("pages/payment_success.py")
-                                else:
-                                    st.error(f"❌ {msg}")
-                            else:
-                                st.error(f"❌ {message}")
+                        # Process download payment - simplified
+                        user_id = st.session_state.user_data['user_id']
+                        
+                        # Generate a simple transaction ID
+                        transaction_id = f"TXN{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                        
+                        # Set payment success flags
+                        st.session_state.payment_completed = True
+                        st.session_state.transaction_id = transaction_id
+                        
+                        st.success("✅ Payment successful!")
+                        time.sleep(1)
+                        st.switch_page("pages/payment_success.py")
             else:
                 # For other payment methods, simulate quick processing
                 with st.spinner(f"🔄 Redirecting to {payment_method}..."):
                     time.sleep(2)
                     
-                    if payment_type == "premium_style":
-                        # Unlock premium style
-                        style_key = st.session_state.pending_style
-                        if 'purchased_styles' not in st.session_state:
-                            st.session_state.purchased_styles = []
-                        st.session_state.purchased_styles.append(style_key)
-                        
-                        # Clear pending style
-                        del st.session_state.pending_style
-                        del st.session_state.pending_style_name
-                        
-                        st.success(f"✅ {style_name} unlocked successfully!")
-                        time.sleep(1)
-                        st.switch_page("pages/toonify_studio.py")
-                    else:
-                        # Process image download payment
-                        user_id = st.session_state.user_data['user_id']
-                        image_id = st.session_state.pending_payment_image_id
-                        
-                        success, message, payment_data = backend.create_payment(
-                            user_id=user_id,
-                            image_id=image_id,
-                            amount=amount,
-                            payment_method=payment_method
-                        )
-                        
-                        if success:
-                            payment_id = payment_data['payment_id']
-                            transaction_id = payment_data['transaction_id']
-                            
-                            success, msg = backend.process_payment(payment_id, transaction_id)
-                            
-                            if success:
-                                st.session_state.payment_completed = True
-                                st.session_state.payment_id = payment_id
-                                st.session_state.transaction_id = transaction_id
-                                st.success("✅ Payment successful!")
-                                time.sleep(1)
-                                st.switch_page("pages/payment_success.py")
-                            else:
-                                st.error(f"❌ {msg}")
-                        else:
-                            st.error(f"❌ {message}")
+                    # Process download payment - simplified (no backend needed)
+                    user_id = st.session_state.user_data['user_id']
+                    
+                    # Generate a simple transaction ID
+                    transaction_id = f"TXN{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                    
+                    # Set payment success flags
+                    st.session_state.payment_completed = True
+                    st.session_state.transaction_id = transaction_id
+                    
+                    st.success("✅ Payment successful!")
+                    time.sleep(1)
+                    st.switch_page("pages/payment_success.py")
     
     # Cancel button
     st.markdown("<br>", unsafe_allow_html=True)
@@ -297,8 +217,6 @@ with col_center:
     with col_cancel2:
         if st.button("Cancel Payment", use_container_width=True):
             # Clear payment state
-            if 'pending_payment_image_id' in st.session_state:
-                del st.session_state.pending_payment_image_id
             if 'pending_style' in st.session_state:
                 del st.session_state.pending_style
             if 'pending_style_name' in st.session_state:

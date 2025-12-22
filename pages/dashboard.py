@@ -20,7 +20,7 @@ if 'authenticated' not in st.session_state or not st.session_state.authenticated
         st.switch_page("pages/login.py")
     st.stop()
 
-# Custom CSS
+# Custom CSS - Dark Mode Only
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -71,6 +71,11 @@ st.markdown("""
     .main {
         background: radial-gradient(ellipse at top, #0f0c29 0%, #302b63 50%, #24243e 100%);
         position: relative;
+        transition: background 0.5s ease;
+    }
+    
+    [data-theme="light"] .main {
+        background: radial-gradient(ellipse at top, #e0c3fc 0%, #8ec5fc 50%, #fbc2eb 100%);
     }
     
     .main .block-container {
@@ -455,3 +460,42 @@ with col3:
         {}
     </div>
     """.format(''.join(location_info)), unsafe_allow_html=True)
+
+# Purchased Styles & Pricing Section
+st.markdown('<div class="dashboard-subheader" style="margin-top: 2rem;">💳 Pricing & Your Purchases</div>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    purchased_styles = st.session_state.get('purchased_styles', [])
+    if purchased_styles:
+        purchased_list = '<br>'.join([f'<div class="info-item">✅ {style.replace("_", " ").title()}</div>' for style in purchased_styles])
+    else:
+        purchased_list = '<div class="info-item" style="opacity: 0.7;">No styles purchased yet</div>'
+    
+    st.markdown(f"""
+    <div class="info-card">
+        <div class="info-card-title">💚 Your Purchased Styles</div>
+        {purchased_list}
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    all_styles = ['classic', 'pencil', 'watercolor', 'comic', 'oil', 'pop', 'anime']
+    purchased_styles = st.session_state.get('purchased_styles', [])
+    available_styles = [s for s in all_styles if s not in purchased_styles]
+    
+    if available_styles:
+        available_list = '<br>'.join([f'<div class="info-item">🎨 {style.replace("_", " ").title()} - ₹99</div>' for style in available_styles])
+    else:
+        available_list = '<div class="info-item" style="opacity: 0.7;">🎉 All styles unlocked!</div>'
+    
+    st.markdown(f"""
+    <div class="info-card">
+        <div class="info-card-title">🛍️ Available Styles</div>
+        <div class="info-item" style="margin-bottom: 1rem;"><span class="info-label">Price per download:</span> ₹99.00</div>
+        {available_list}
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)

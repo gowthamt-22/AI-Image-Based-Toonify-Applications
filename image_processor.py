@@ -249,24 +249,35 @@ class ImageProcessor:
 
     def _oil_painting(self, img):
         """Oil painting - A rich, textured oil paint effect with visible brush strokes"""
-        # Step 1: Use the dedicated oil painting function with larger parameters
-        oil = cv2.xphoto.oilPainting(img, 10, 1, cv2.COLOR_BGR2Lab) # Use Lab space for better results
+        # Step 1: Apply median blur multiple times for oil paint texture
+        oil = img.copy()
+        for _ in range(3):
+            oil = cv2.medianBlur(oil, 9)
         
-        # Step 2: Boost colors for a rich, deep palette
+        # Step 2: Use stylization for painterly effect
+        oil = cv2.stylization(oil, sigma_s=60, sigma_r=0.6)
+        
+        # Step 3: Boost colors for a rich, deep palette
         hsv = cv2.cvtColor(oil, cv2.COLOR_BGR2HSV).astype(np.float32)
-        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * 1.9, 0, 255)  # Deep, rich saturation
-        hsv[:, :, 2] = np.clip(hsv[:, :, 2] * 1.2, 0, 255)
+        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * 2.0, 0, 255)  # Deep, rich saturation
+        hsv[:, :, 2] = np.clip(hsv[:, :, 2] * 1.25, 0, 255)
         oil = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
         
-        # Step 3: Enhance details to simulate brush stroke texture
-        oil = cv2.detailEnhance(oil, sigma_s=10, sigma_r=0.3)
+        # Step 4: Apply bilateral filter for smooth brush strokes
+        for _ in range(4):
+            oil = cv2.bilateralFilter(oil, d=9, sigmaColor=100, sigmaSpace=100)
         
-        # Step 4: Sharpen to define the "edges" of the brush strokes
-        kernel = np.array([[-1, -1, -1], [-1, 9.5, -1], [-1, -1, -1]])
-        oil = cv2.filter2D(oil, -1, kernel)
+        # Step 5: Enhance details to simulate brush stroke texture
+        oil = cv2.detailEnhance(oil, sigma_s=12, sigma_r=0.35)
         
-        # Step 5: Final contrast adjustment
-        oil = cv2.convertScaleAbs(oil, alpha=1.2, beta=10)
+        # Step 6: Add texture by blending with edge-enhanced version
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Laplacian(gray, cv2.CV_8U, ksize=3)
+        edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+        oil = cv2.addWeighted(oil, 0.9, edges, 0.1, 0)
+        
+        # Step 7: Final contrast adjustment
+        oil = cv2.convertScaleAbs(oil, alpha=1.3, beta=15)
         
         return Image.fromarray(cv2.cvtColor(oil, cv2.COLOR_BGR2RGB))
 

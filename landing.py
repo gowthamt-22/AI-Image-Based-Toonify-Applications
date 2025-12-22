@@ -1,6 +1,11 @@
 import streamlit as st
 from PIL import Image
 import base64
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 st.set_page_config(
     page_title="Toonify - Transform Images to Cartoons with AI",
@@ -9,9 +14,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Ultra Premium Modern CSS with Vibrant Colors
+# Ultra Premium Modern CSS with Vibrant Colors - Dark Mode Only
 st.markdown("""
 <style>
+```
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
     
     * {
@@ -20,9 +26,16 @@ st.markdown("""
         padding: 0;
     }
     
-    /* Vibrant Animated Gradient Background */
+    /* Vibrant Animated Gradient Background with Theme Support */
     .stApp {
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe);
+        background-size: 400% 400%;
+        animation: gradientBG 12s ease infinite;
+        transition: background 0.5s ease;
+    }
+    
+    [data-theme="light"] .stApp {
+        background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #fbc2eb, #a1c4fd, #c2e9fb);
         background-size: 400% 400%;
         animation: gradientBG 12s ease infinite;
     }
@@ -296,6 +309,88 @@ with col3:
         <span class='feature-icon'>🔒</span>
         <h3 class='feature-title color-yellow'>100% Secure</h3>
         <p class='feature-text'>Your images are processed securely and never stored</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br><br><br>", unsafe_allow_html=True)
+
+# Style Examples Section
+st.markdown("<h2 class='section-title'>🎨 Explore Our AI Transformation Styles</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #cbd5e1; font-size: 1.1rem; margin-bottom: 3rem;'>See what each style can do for your images - Preview free, Download for ₹99</p>", unsafe_allow_html=True)
+
+col1, col2, col3, col4 = st.columns(4, gap="medium")
+
+with col1:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>🎭</div>
+        <h4 style='color: #fbbf24; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Classic Cartoon</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Vibrant colors & smooth edges</p>
+        <span style='background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>✏️</div>
+        <h4 style='color: #60a5fa; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Pencil Sketch</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Artistic hand-drawn look</p>
+        <span style='background: rgba(96, 165, 250, 0.2); color: #60a5fa; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>💧</div>
+        <h4 style='color: #34d399; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Watercolor</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Soft painting effect</p>
+        <span style='background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>💥</div>
+        <h4 style='color: #f472b6; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Comic Book</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Bold superhero style</p>
+        <span style='background: rgba(244, 114, 182, 0.2); color: #f472b6; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([1, 1, 1], gap="medium")
+
+with col1:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>🖌️</div>
+        <h4 style='color: #c084fc; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Oil Painting</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Classic oil paint texture</p>
+        <span style='background: rgba(192, 132, 252, 0.2); color: #c084fc; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>🌈</div>
+        <h4 style='color: #fb923c; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Pop Art</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Vibrant Warhol-style art</p>
+        <span style='background: rgba(251, 146, 60, 0.2); color: #fb923c; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class='feature-card' style='text-align: center; padding: 1.5rem;'>
+        <div style='font-size: 4rem; margin-bottom: 1rem;'>⚡</div>
+        <h4 style='color: #a78bfa; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;'>Anime Style</h4>
+        <p style='color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;'>Japanese animation look</p>
+        <span style='background: rgba(167, 139, 250, 0.2); color: #a78bfa; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;'>₹99</span>
     </div>
     """, unsafe_allow_html=True)
 
