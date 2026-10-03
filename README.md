@@ -1,168 +1,74 @@
-# Toonify: The Art of Cartooning Images
+# Toonify: The Art of Cartooning Images 🎨
 
 ## Project Overview
-Interactive application that converts real-world images into various cartoon-style effects using OpenCV.
+Toonify Studio is an interactive, premium web application that converts real-world images into stunning cartoon-style effects using OpenCV and AI. Featuring a state-of-the-art glassmorphism UI, real-time image enhancements, and a fully functional mock payment gateway.
 
-## Week 1-2: User Authentication & Registration System
+## ✨ Key Features (Fully Implemented)
 
-### Features Implemented
-✅ User Registration with validation
-✅ User Login and Authentication
-✅ Secure Password Management
-✅ Database Structure for User Management
-✅ Session Management
-✅ Input Validation and Error Handling
+### 1. 🎨 Stunning UI/UX Design System
+- **Premium Glassmorphism Aesthetics:** Frosted-glass cards, translucent layers, and a vibrant Purple-to-Cyan gradient background.
+- **7-Screen User Journey:** A seamless flow from the Landing Page to Auth, Dashboard, Fine-Tuning, Preview, Checkout, and Success.
+- **Responsive & Dynamic:** Glowing buttons, micro-animations, and styled file dropzones.
 
-### Project Structure
-```
-Infosys project 1/
-├── app.py                 # Main Streamlit application
+### 2. 🤖 Advanced Image Processing & Filters
+- **8 Unique AI Styles:** Classic, Pencil Sketch, Watercolor, Comic, Oil Paint, Pop Art, Anime, and Cartoon.
+- **Fine-Tune Parameters:** Real-time adjustable sliders for **Brightness**, **Contrast**, **Saturation**, and **Sharpness** (powered by PIL `ImageEnhance`).
+- **OpenCV Integration:** High-performance image processing using `cv2.bilateralFilter`, edge detection, color quantization, and more.
+
+### 3. 💳 Secure Payment Gateway (Checkout Flow)
+- **Interactive Checkout:** A gorgeous glassmorphism checkout modal displaying the selected filter, price (₹99.00), and feature list.
+- **Payment Methods:** Support for Credit/Debit Card, PayPal, Google Pay, and Apple Pay mock selection.
+- **Success Receipt:** Generates a unique Transaction ID and a beautiful success receipt before allowing the high-res image download.
+
+### 4. 🔒 User Authentication & Security
+- User Registration and Login with session state management.
+- Secure password handling, bcrypt hashing, and input validation.
+
+## 🛠️ Project Structure
+```text
+Infosys project/
+├── app.py                 # Main Streamlit application (Frontend + UI Logic + Payment)
+├── filters/               # Directory containing OpenCV filter modules
+│   ├── cartoon_filter.py
+│   ├── sketch_filter.py
+│   └── pencil_filter.py
 ├── auth.py                # Authentication logic and validation
 ├── database.py            # Database management and operations
 ├── requirements.txt       # Project dependencies
-└── README.md             # This file
+└── README.md              # Project documentation
 ```
 
-### Installation
+## 🚀 Installation & Running
 
-1. Install required dependencies:
+1. **Clone the repository:**
+```bash
+git clone https://github.com/gowthamt-22/AI-Image-Based-Toonify-Applications.git
+cd AI-Image-Based-Toonify-Applications
+```
+
+2. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
+# Alternatively, ensure these are installed:
+pip install streamlit opencv-python Pillow numpy bcrypt email-validator python-dotenv
 ```
 
-### Running the Application
-
+3. **Run the Application:**
 ```bash
 streamlit run app.py
 ```
 
-The application will open in your default web browser at `http://localhost:8501`
+The application will open in your default web browser at `http://localhost:8501`.
 
-### Features
-
-#### 1. User Registration
-- Username validation (3-20 characters, alphanumeric + underscore)
-- Email validation with proper format checking
-- Strong password requirements:
-  - Minimum 8 characters
-  - At least one uppercase letter
-  - At least one lowercase letter
-  - At least one digit
-  - At least one special character
-- Full name (optional)
-- Duplicate email/username prevention
-
-#### 2. User Login
-- Email and password authentication
-- Account lockout after 5 failed attempts (30 minutes)
-- Login attempt tracking for security
-- Session management
-
-#### 3. Security Features
-- Password hashing using bcrypt
-- SQL injection prevention using parameterized queries
-- Failed login attempt tracking
-- Account lockout mechanism
-- Input validation and sanitization
-
-#### 4. User Account Management
-- Change password functionality
-- User profile information display
-- Secure logout
-
-### Database Schema
-
-#### Users Table
-- `user_id` (Primary Key)
-- `username` (Unique)
-- `email` (Unique)
-- `password_hash`
-- `full_name`
-- `created_at`
-- `last_login`
-- `is_active`
-- `account_type`
-
-#### User Sessions Table
-- `session_id` (Primary Key)
-- `user_id` (Foreign Key)
-- `session_token`
-- `created_at`
-- `expires_at`
-- `ip_address`
-
-#### Login Attempts Table
-- `attempt_id` (Primary Key)
-- `email`
-- `ip_address`
-- `success`
-- `attempted_at`
-
-### Testing the System
-
-1. **Registration Test:**
-   - Navigate to Sign Up page
-   - Enter valid credentials
-   - Verify validation errors for:
-     - Weak passwords
-     - Invalid email formats
-     - Short usernames
-     - Duplicate usernames/emails
-
-2. **Login Test:**
-   - Use registered credentials
-   - Test invalid credentials (account lockout after 5 attempts)
-   - Verify successful login redirects to main app
-
-3. **Password Change Test:**
-   - Login to account
-   - Click "Change Password"
-   - Verify password strength validation
-   - Confirm password update
-
-### Security Considerations
-
-- ✅ Passwords are hashed using bcrypt (never stored in plain text)
-- ✅ SQL injection protection via parameterized queries
-- ✅ Email validation prevents invalid formats
-- ✅ Account lockout prevents brute force attacks
-- ✅ Session management for authenticated users
-- ✅ Input sanitization and validation
-
-### Future Enhancements (Upcoming Weeks)
-
-- Image upload functionality
-- OpenCV cartoon effects implementation
-- Edge detection and bilateral filtering
-- Color quantization
-- Sketch and pencil effects
-- Side-by-side image comparison
-- User image gallery
-- Export processed images
-
-### Dependencies
-
-- `streamlit` - Web application framework
-- `opencv-python` - Image processing (for future weeks)
-- `Pillow` - Image handling
-- `numpy` - Array operations
-- `bcrypt` - Password hashing
-- `email-validator` - Email format validation
-- `python-dotenv` - Environment variable management
-- `sqlite3` - Database (built-in with Python)
-
-### Development Notes
-
-- SQLite database file (`toonify_users.db`) will be created automatically on first run
-- All passwords are securely hashed before storage
-- Session state managed by Streamlit
-- Responsive UI design for better user experience
-
-### Contact & Support
-
-For issues or questions, refer to project documentation or contact the development team.
+## 📸 Workflow Guide
+1. **Home/Landing:** View features and metrics. Click "Login" or "Register".
+2. **Dashboard:** Drag & drop your image into the styled uploader.
+3. **Style Selection:** Choose from 8 premium filters.
+4. **Fine-Tuning:** Adjust image parameters and preview the side-by-side transformation.
+5. **Checkout:** Proceed to the mock secure payment gateway for ₹99.00.
+6. **Download:** Receive your transaction receipt and download the final high-res `.png` result!
 
 ---
 
-**Status:** Week 1-2 Complete ✅
-**Next Phase:** Image Processing Features (Weeks 3-4)
+**Status:** Project Complete ✅
+**Technologies:** Python, Streamlit, OpenCV, PIL, HTML/CSS
